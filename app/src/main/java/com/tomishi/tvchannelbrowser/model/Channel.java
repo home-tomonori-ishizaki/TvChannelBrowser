@@ -1,9 +1,12 @@
 package com.tomishi.tvchannelbrowser.model;
 
+import android.net.Uri;
+
 public class Channel {
 
     private String mChannelName;
     private String mChannnelNumber;
+    private Uri mLogo;
 
     public Channel setChannelName(String channelName) {
         mChannelName = channelName;
@@ -21,5 +24,14 @@ public class Channel {
 
     public String getChannelNumber() {
         return mChannnelNumber;
+    }
+
+    public Channel setChannelLogo(Uri logo) {
+        mLogo = logo;
+        return this;
+    }
+
+    public Uri getChannelLogo() {
+        return mLogo;
     }
 }

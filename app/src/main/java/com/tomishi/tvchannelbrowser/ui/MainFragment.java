@@ -134,6 +134,7 @@ public class MainFragment extends BrowseFragment {
                 null)) {
 
             int idxInputId = cursor.getColumnIndexOrThrow(TvContract.Channels.COLUMN_INPUT_ID);
+            int idxId = cursor.getColumnIndexOrThrow(TvContract.Channels._ID);
             int idxChannelName = cursor.getColumnIndexOrThrow(TvContract.Channels.COLUMN_DISPLAY_NAME);
             int idxChannelNumber = cursor.getColumnIndexOrThrow(TvContract.Channels.COLUMN_DISPLAY_NUMBER);
 
@@ -146,7 +147,8 @@ public class MainFragment extends BrowseFragment {
 
                 Channel channel = new Channel()
                         .setChannelName(cursor.getString(idxChannelName))
-                        .setChannelNumber(cursor.getString(idxChannelNumber));
+                        .setChannelNumber(cursor.getString(idxChannelNumber))
+                        .setChannelLogo(TvContract.buildChannelLogoUri(cursor.getLong(idxId)));
                 channels.add(channel);
             }
         }
