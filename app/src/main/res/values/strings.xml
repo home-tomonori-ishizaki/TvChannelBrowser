@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TvChannelBrowser</string>
+    <string name="get_channel">Get channel data</string>
 </resources>

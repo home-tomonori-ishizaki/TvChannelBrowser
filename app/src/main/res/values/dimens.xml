@@ -1,4 +1,8 @@
 <resources>
     <dimen name="channel_item_width">156dp</dimen>
     <dimen name="channel_item_height">88dp</dimen>
+
+    <dimen name="string_item_width">100dp</dimen>
+    <dimen name="string_item_height">100dp</dimen>
+
 </resources>

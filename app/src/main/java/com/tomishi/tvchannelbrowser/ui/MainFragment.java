@@ -21,8 +21,10 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tomishi.tvchannelbrowser.R;
 import com.tomishi.tvchannelbrowser.model.Channel;
 import com.tomishi.tvchannelbrowser.presenter.ChannelItemPresenter;
+import com.tomishi.tvchannelbrowser.presenter.StringItemPresenter;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -64,8 +66,15 @@ public class MainFragment extends BrowseFragment {
         selector.addClassPresenter(ListRow.class, new ListRowPresenter());
 
         mRowAdapter = new ArrayObjectAdapter(selector);
+
+        // load setting row
+        ArrayObjectAdapter settings = new ArrayObjectAdapter(new StringItemPresenter());
+        settings.add(getActivity().getString(R.string.get_channel));
+        mRowAdapter.add(new ListRow(new HeaderItem(0, "Settings"), settings));
+
         setAdapter(mRowAdapter);
 
+        // load channel rows
         if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
                 != PackageManager.PERMISSION_GRANTED) {
             // check SDK level, becuase requestPermissions can be called above 23
