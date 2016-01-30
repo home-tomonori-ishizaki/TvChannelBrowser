@@ -29,6 +29,7 @@ public class ChannelItemPresenter extends Presenter {
         ImageCardView cardView = (ImageCardView)viewHolder.view;
 
         cardView.setTitleText(channel.getChannelName());
+        cardView.setContentText(channel.getChannelNumber());
     }
 
     @Override
