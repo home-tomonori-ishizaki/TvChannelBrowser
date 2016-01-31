@@ -1,22 +1,24 @@
 package com.tomishi.tvchannelbrowser.ui;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.os.Environment;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ClassPresenterSelector;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
+import android.support.v17.leanback.widget.OnItemViewClickedListener;
+import android.support.v17.leanback.widget.Presenter;
+import android.support.v17.leanback.widget.Row;
+import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,6 +28,11 @@ import com.tomishi.tvchannelbrowser.model.Channel;
 import com.tomishi.tvchannelbrowser.presenter.ChannelItemPresenter;
 import com.tomishi.tvchannelbrowser.presenter.StringItemPresenter;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +58,8 @@ public class MainFragment extends BrowseFragment {
         setupUIElements();
 
         loadRows();
+
+        setupEventListeners();
     }
 
     private void setupUIElements() {
@@ -163,6 +172,73 @@ public class MainFragment extends BrowseFragment {
         }
 
         return channels;
+    }
+
+
+    private void dumpChannels() {
+        StringBuffer sb = new StringBuffer();
+
+        try (Cursor cursor = getActivity().getContentResolver().query(
+                TvContract.Channels.CONTENT_URI,
+                null,
+                null,
+                null,
+                null)) {
+            //DatabaseUtils.dumpCursor(cursor);
+
+            // dump header
+            String[] cols = cursor.getColumnNames();
+            for (int i = 0; i < cols.length; i++) {
+                if (i != 0) {
+                    sb.append(",");
+                }
+                sb.append(cols[i]);
+            }
+            sb.append("\n");
+
+            // dump data
+            while (cursor.moveToNext()) {
+                for (int i = 0; i < cols.length; i++) {
+                    if (i != 0) {
+                        sb.append(",");
+                    }
+                    sb.append(cursor.getString(i));
+                }
+                sb.append("\n");
+            }
+            //Log.i(TAG, sb.toString());
+        }
+
+        // dump to external storage
+        Log.i(TAG, Environment.getExternalStorageDirectory().toString());
+        File file = new File(Environment.getExternalStorageDirectory().toString() + "/channels.csv");
+        OutputStream outputStream = null;
+        try {
+            outputStream  = new FileOutputStream(file);
+            outputStream.write(sb.toString().getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+    }
+
+    private void setupEventListeners() {
+        setOnItemViewClickedListener(new OnItemViewClickedListener() {
+            @Override
+            public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
+                                      RowPresenter.ViewHolder rowViewHolder, Row row) {
+                if (item instanceof String) {
+                    dumpChannels();
+                }
+            }
+        });
     }
 }
 
