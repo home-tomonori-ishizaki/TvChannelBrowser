@@ -47,6 +47,7 @@ public class MainFragment extends BrowseFragment {
     private static final int REQUEEST_ID_PERMISSION_DUMP_CHANNELS = 1;
 
     private static final String PERMISSION_READ_TV_LISTING = "android.permission.READ_TV_LISTINGS";
+    private static final String PERMISSION_ACCESS_EPG_DATA = "com.android.providers.tv.permission.ACCESS_ALL_EPG_DATA";
 
     private ArrayObjectAdapter mRowAdapter;
 
@@ -106,7 +107,14 @@ public class MainFragment extends BrowseFragment {
     }
 
     private void loadChannelsIfGranted(boolean show) {
-        // load channel rows
+        // if ACCESS_ALL_EPG_DATA(signatureOrSystem) is granted, can load channels
+        if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_ACCESS_EPG_DATA)
+                == PackageManager.PERMISSION_GRANTED) {
+            loadChannels();
+            return;
+        }
+
+        // check SDK level, because requestPermissions can be called above 23
         if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -191,8 +199,10 @@ public class MainFragment extends BrowseFragment {
 
         List<String> permissions = new LinkedList<>();
 
-        if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
-                != PackageManager.PERMISSION_GRANTED) {
+        if ((ContextCompat.checkSelfPermission(getActivity(), PERMISSION_ACCESS_EPG_DATA)
+                != PackageManager.PERMISSION_GRANTED)
+            && (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
+                != PackageManager.PERMISSION_GRANTED)) {
             permissions.add(PERMISSION_READ_TV_LISTING);
         }
 
