@@ -23,6 +23,7 @@ import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.tomishi.tvchannelbrowser.R;
 import com.tomishi.tvchannelbrowser.model.Channel;
@@ -42,7 +43,8 @@ import java.util.jar.Manifest;
 
 public class MainFragment extends BrowseFragment {
     private static final String TAG = MainFragment.class.getSimpleName();
-    private static final int REQUEEST_ID_PERMISSION = 0;
+    private static final int REQUEEST_ID_PERMISSION_LOAD_CHANNELS = 0;
+    private static final int REQUEEST_ID_PERMISSION_DUMP_CHANNELS = 1;
 
     private static final String PERMISSION_READ_TV_LISTING = "android.permission.READ_TV_LISTINGS";
 
@@ -84,34 +86,44 @@ public class MainFragment extends BrowseFragment {
 
         setAdapter(mRowAdapter);
 
+        loadChannelsIfGranted(true);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEEST_ID_PERMISSION_LOAD_CHANNELS:
+                loadChannelsIfGranted(false);
+                break;
+
+            case REQUEEST_ID_PERMISSION_DUMP_CHANNELS:
+                dumpChannelsIfGranted(false);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void loadChannelsIfGranted(boolean show) {
         // load channel rows
         if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
                 != PackageManager.PERMISSION_GRANTED) {
-            // check SDK level, becuase requestPermissions can be called above 23
+
+            if (show == false) {
+                return;
+            }
+
+            // check SDK level, because requestPermissions can be called above 23
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(
                         new String[]{PERMISSION_READ_TV_LISTING},
-                        REQUEEST_ID_PERMISSION
+                        REQUEEST_ID_PERMISSION_LOAD_CHANNELS
                 );
             }
             return;
         }
         loadChannels();
-    }
-
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode != REQUEEST_ID_PERMISSION) {
-            return;
-        }
-
-        for (int i = 0; i < permissions.length; i++) {
-            if (TextUtils.equals(permissions[i], PERMISSION_READ_TV_LISTING)) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadChannels();
-                }
-            }
-        }
     }
 
     private void loadChannels() {
@@ -175,6 +187,37 @@ public class MainFragment extends BrowseFragment {
         return channels;
     }
 
+    private void dumpChannelsIfGranted(boolean show) {
+
+        List<String> permissions = new LinkedList<>();
+
+        if (ContextCompat.checkSelfPermission(getActivity(), PERMISSION_READ_TV_LISTING)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(PERMISSION_READ_TV_LISTING);
+        }
+
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+
+        if (!permissions.isEmpty()) {
+            if (show == false) {
+                return;
+            }
+
+            // check SDK level, because requestPermissions can be called above 23
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(
+                        permissions.toArray(new String[permissions.size()]),
+                        REQUEEST_ID_PERMISSION_DUMP_CHANNELS
+                );
+            }
+            return;
+        }
+
+        dumpChannels();
+    }
 
     private void dumpChannels() {
         StringBuffer sb = new StringBuffer();
@@ -228,6 +271,8 @@ public class MainFragment extends BrowseFragment {
                 }
             }
         }
+
+        Toast.makeText(getActivity(), "success", Toast.LENGTH_SHORT).show();
     }
 
     private void setupEventListeners() {
@@ -236,7 +281,7 @@ public class MainFragment extends BrowseFragment {
             public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
                                       RowPresenter.ViewHolder rowViewHolder, Row row) {
                 if (item instanceof String) {
-                    dumpChannels();
+                    dumpChannelsIfGranted(true);
                 }
             }
         });
