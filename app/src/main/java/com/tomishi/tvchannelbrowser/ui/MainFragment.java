@@ -149,6 +149,9 @@ public class MainFragment extends BrowseFragment {
 
         TvInputManager tvInputManager = (TvInputManager)getActivity().getSystemService(Context.TV_INPUT_SERVICE);
         for (TvInputInfo inputInfo : tvInputManager.getTvInputList()) {
+            if (inputInfo.getType() != TvInputInfo.TYPE_TUNER) {
+                continue;
+            }
             inputs.put(inputInfo.getId(), inputInfo.loadLabel(getActivity()).toString());
         }
 
