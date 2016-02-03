@@ -30,6 +30,7 @@ import com.tomishi.tvchannelbrowser.R;
 import com.tomishi.tvchannelbrowser.model.Channel;
 import com.tomishi.tvchannelbrowser.presenter.ChannelItemPresenter;
 import com.tomishi.tvchannelbrowser.presenter.StringItemPresenter;
+import com.tomishi.tvchannelbrowser.util.StorageUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -242,64 +243,10 @@ public class MainFragment extends BrowseFragment {
                 null,
                 null,
                 null)) {
-            //DatabaseUtils.dumpCursor(cursor);
 
-            // dump header
-            String[] cols = cursor.getColumnNames();
-            for (int i = 0; i < cols.length; i++) {
-                if (i != 0) {
-                    sb.append(",");
-                }
-                sb.append(cols[i]);
-            }
-            sb.append("\n");
-
-            // dump data
-            while (cursor.moveToNext()) {
-                for (int i = 0; i < cols.length; i++) {
-                    if (i != 0) {
-                        sb.append(",");
-                    }
-                    try {
-                        String value = cursor.getString(i);
-                        if (value != null) {
-                            // each value will be surround by ["], so replace ["] to [']
-                            value = value.replaceAll("\"", "'");
-                        }
-                        sb.append("\"");
-                        sb.append(value);
-                        sb.append("\"");
-                    } catch (SQLiteException e) {
-                        // case of blob data
-                        sb.append("\"---\"");
-                    } finally {
-                    }
-                }
-                sb.append("\n");
-            }
-            //Log.i(TAG, sb.toString());
+            boolean status = StorageUtils.storeCursor(cursor, "channles.csv");
+            Toast.makeText(getActivity(), status ? "success" : "fail", Toast.LENGTH_SHORT).show();
         }
-
-        // dump to external storage
-        Log.i(TAG, Environment.getExternalStorageDirectory().toString());
-        File file = new File(Environment.getExternalStorageDirectory().toString() + "/channels.csv");
-        OutputStream outputStream = null;
-        try {
-            outputStream  = new FileOutputStream(file);
-            outputStream.write(sb.toString().getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-
-                }
-            }
-        }
-
-        Toast.makeText(getActivity(), "success", Toast.LENGTH_SHORT).show();
     }
 
     private void setupEventListeners() {
