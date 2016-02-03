@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
 
     <!-- these are signatureOrSystem permission -->
+    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
     <uses-permission android:name="com.android.providers.tv.permission.ACCESS_ALL_EPG_DATA" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
