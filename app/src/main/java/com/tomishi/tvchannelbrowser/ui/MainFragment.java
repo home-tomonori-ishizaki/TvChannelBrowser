@@ -3,6 +3,7 @@ package com.tomishi.tvchannelbrowser.ui;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -259,7 +260,20 @@ public class MainFragment extends BrowseFragment {
                     if (i != 0) {
                         sb.append(",");
                     }
-                    sb.append(cursor.getString(i));
+                    try {
+                        String value = cursor.getString(i);
+                        if (value != null) {
+                            // each value will be surround by ["], so replace ["] to [']
+                            value = value.replaceAll("\"", "'");
+                        }
+                        sb.append("\"");
+                        sb.append(value);
+                        sb.append("\"");
+                    } catch (SQLiteException e) {
+                        // case of blob data
+                        sb.append("\"---\"");
+                    } finally {
+                    }
                 }
                 sb.append("\n");
             }
