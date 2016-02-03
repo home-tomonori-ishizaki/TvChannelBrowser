@@ -235,7 +235,10 @@ public class MainFragment extends BrowseFragment {
     }
 
     private void dumpChannels() {
-        StringBuffer sb = new StringBuffer();
+        String rootPath = StorageUtils.getRemovableStoragePath(getActivity());
+        if (rootPath == null) {
+            Toast.makeText(getActivity(), "external device is not found", Toast.LENGTH_SHORT).show();
+        }
 
         try (Cursor cursor = getActivity().getContentResolver().query(
                 TvContract.Channels.CONTENT_URI,
@@ -244,7 +247,7 @@ public class MainFragment extends BrowseFragment {
                 null,
                 null)) {
 
-            boolean status = StorageUtils.storeCursor(cursor, "channles.csv");
+            boolean status = StorageUtils.storeCursor(cursor, rootPath + "/channles.csv");
             Toast.makeText(getActivity(), status ? "success" : "fail", Toast.LENGTH_SHORT).show();
         }
     }

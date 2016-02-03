@@ -1,14 +1,19 @@
 package com.tomishi.tvchannelbrowser.util;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Environment;
+import android.os.storage.StorageManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class StorageUtils {
     private final static String TAG = StorageUtils.class.getSimpleName();
@@ -18,12 +23,9 @@ public class StorageUtils {
         String csvStr = cursorToCsv(cursor);
 
         // dump to external storage
-        File file = new File(Environment.getExternalStorageDirectory().toString()
-                + File.separator + filename);
-        Log.i(TAG, "store path : " + file.toString());
         OutputStream outputStream = null;
         try {
-            outputStream  = new FileOutputStream(file);
+            outputStream  = new FileOutputStream(new File(filename));
             outputStream.write(csvStr.getBytes());
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,5 +82,34 @@ public class StorageUtils {
         }
         //Log.i(TAG, sb.toString());
         return sb.toString();
+    }
+
+    public static String getRemovableStoragePath(Context context) {
+        try {
+            StorageManager sm = (StorageManager)context.getSystemService(Context.STORAGE_SERVICE);
+            Method getVolumeList = sm.getClass().getDeclaredMethod("getVolumeList");
+            Object[] volumeList = (Object[])getVolumeList.invoke(sm);
+            for (Object volume : volumeList) {
+                Method getPath = volume.getClass().getDeclaredMethod("getPath");
+                Method isRemovable = volume.getClass().getDeclaredMethod("isRemovable");
+                Method getState = volume.getClass().getDeclaredMethod("getState");
+                String path = (String)getPath.invoke(volume);
+                boolean removable = (Boolean)isRemovable.invoke(volume);
+                String state = (String)getState.invoke(volume);
+                //Log.i(TAG, "path:" + path + " removable:" + removable + " state:" + state);
+                if (removable && TextUtils.equals(state, Environment.MEDIA_MOUNTED)) {
+                    return path;
+                }
+            }
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
